@@ -1,0 +1,11 @@
+language: scala
+scala:
+  - 2.11.1
+sudo: false
+cache:
+  directories:
+      - $HOME/.ivy2
+addons:
+  artifacts:
+    paths:
+    - $(git ls-files -o | grep \.json$ | tr "\n" ":")
