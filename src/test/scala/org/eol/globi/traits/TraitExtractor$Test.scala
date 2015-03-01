@@ -35,7 +35,7 @@ class TraitExtractor$Test extends FlatSpec with Matchers {
 
   "read a csv" should "read that csv" in {
     val lookup = Map("globi:ref:889328" -> "http://eol.org/pages/40021/data#data_point_17228895")
-    TraitExtractor.printProviderAndConsumer(lookup, println)
+    //TraitExtractor.printProviderAndConsumer(lookup, println)
   }
 
 

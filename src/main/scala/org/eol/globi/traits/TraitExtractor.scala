@@ -44,10 +44,14 @@ object TraitExtractor {
     traitsWithIdAndURI.map { someTrait => (someTrait.id.getOrElse(""), taxonPageURL.getOrElse("") + "/data#data_point_" + someTrait.data_point_uri_id.getOrElse(""))}
   }
 
-  def printProviderAndConsumer(lookup: Map[String, String], fun: (Any) => Unit) {
+  def printProviderAndConsumer(lookup: List[(String, String)], printer: (String) => Unit) = {
      val reader = CSVReader.open(new InputStreamReader(getClass.getResourceAsStream("/references.csv")))
      val uri = reader.toStream().take(1)(0).zipWithIndex.filter { x => "uri".equals(x._1)}.head
-     reader.foreach { row => lookup.get(row(0)) map { x => fun(List(row(uri._2), x).mkString(","))}}
+
+     reader.foreach { row =>
+       lookup.filter { someTrait => someTrait._1.equals(row(0))}
+         .foreach { selectedTrait => printer(List(row(uri._2), selectedTrait._2).mkString(",")) }
+     }
    }
 
    def extractGloBIRefId(eolAssociationURI: String): String = {

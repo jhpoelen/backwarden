@@ -1,11 +1,11 @@
 package org.eol.globi.traits
 
 import dispatch._, Defaults._
-import org.eol.globi.traits.TraitExtractor
+import org.eol.globi.traits.TraitExtractor.{printProviderAndConsumer, extractGloBIRefId, extractGloBITraits, traitsForPageId}
 
 object TraitExtractorCLI extends App {
 
-  def pageIds: List[String] = {
+  def getEOLPageIds: List[String] = {
     if (args.length == 0) {
       TraitExtractor.likelyPageIdsForINaturalistTaxa(100).toList
     } else {
@@ -13,13 +13,26 @@ object TraitExtractorCLI extends App {
     }
   }
 
-  println("provider,consumer")
-  val traitMap = pageIds.foreach( pageId => {
-    val traits = TraitExtractor.traitsForPageId(pageId)
-    val traitMap = TraitExtractor.extractGloBITraits(traits)
-      .foldLeft(Map[String, String]())((acc, someTrait) => acc ++ Map(TraitExtractor.extractGloBIRefId(someTrait._1) -> someTrait._2))
-    TraitExtractor.printProviderAndConsumer(traitMap, println)
+  def printProviderConsumerPairs(pageIds: List[String], printer: (String) => Unit) = {
+    println("provider,consumer")
+    pageIds.foreach(pageId => {
+      try {
+        val traits = traitsForPageId(pageId)
+        val traitMap = extractGloBITraits(traits)
+        val traitPairs = traitMap map { traitPair => (extractGloBIRefId(traitPair._1), traitPair._2)}
+        printProviderAndConsumer(traitPairs, printer)
+      } catch {
+          case ex: Throwable => sys.error("failed to retrieve [" + pageId + "], because of [" + ex.getMessage + "]")
+          case _: Throwable => sys.error("failed to retrieve [" + pageId + "])")
+      }
+    }
+    )
   }
-  )
-  Http.shutdown()
+
+  try {
+    printProviderConsumerPairs(getEOLPageIds, println)
+  } finally {
+    Http.shutdown()
+  }
+
 }
